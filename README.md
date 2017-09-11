@@ -1,9 +1,10 @@
 hgmp
 ====
 
-Haskell interface to GMP.  Contains type definitions and marshalling functions,
-to be able to write FFI bindings using Haskell's Integer and Rational types.
-Function bindings may come in a future version.
+Haskell interface to GMP.  Types and instances, and marshalling between Integer
+and Rational and the corresponding GMP types, along with raw foreign imports of
+GMP functions.  Allows FFI to GMP code (whether in GMP itself or in third-party
+code that uses GMP).
 
 A simple example illustrating binding to GMP's next probable-prime function:
 
@@ -12,10 +13,8 @@ A simple example illustrating binding to GMP's next probable-prime function:
     import Foreign.Ptr (Ptr(..))
     import Numeric.GMP.Types (MPZ)
     import Numeric.GMP.Utils (withInInteger, withOutInteger_)
+    import Numeric.GMP.Raw.Safe (mpz_nextprime)
     import System.IO.Unsafe (unsafePerformIO)
-
-    foreign import ccall safe "__gmpz_nextprime"
-      mpz_nextprime :: Ptr MPZ -> Ptr MPZ -> IO ()
 
     nextPrime :: Integer -> Integer
     nextPrime n =

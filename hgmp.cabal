@@ -1,10 +1,11 @@
 name:                hgmp
 version:             0.1.0.1
 synopsis:            Haskell interface to GMP
-description:         Currently, types and instances, and marshalling between
-                     Integer and Rational and the corresponding GMP types.
-                     That is, enough to allow FFI to GMP code (whether in GMP
-                     itself or in third-party code that uses GMP).
+description:         Types and instances, and marshalling between Integer and
+                     Rational and the corresponding GMP types, along with raw
+                     foreign imports of GMP functions.  Allows FFI to GMP code
+                     (whether in GMP itself or in third-party code that uses
+                     GMP).
                      .
                      Supports only GHC with integer-gmp, this might change if
                      there's any demand.
