@@ -4,11 +4,9 @@ module Main (main) where
 import Foreign.Ptr (Ptr(..))
 import Numeric.GMP.Types (MPZ)
 import Numeric.GMP.Utils (withInInteger, withOutInteger_)
+import Numeric.GMP.Raw.Safe (mpz_nextprime)
 import System.Environment (getArgs)
 import System.IO.Unsafe (unsafePerformIO)
-
-foreign import ccall safe "__gmpz_nextprime"
-  mpz_nextprime :: Ptr MPZ -> Ptr MPZ -> IO ()
 
 nextPrimeIO :: Integer -> IO Integer
 nextPrimeIO n = do
