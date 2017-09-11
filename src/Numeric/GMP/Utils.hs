@@ -3,8 +3,7 @@
 {-# LANGUAGE UnboxedTuples #-}
 -- | GMP utilities.  A simple example with probable primes:
 --
--- > foreign import ccall safe "__gmpz_nextprime"
--- >   mpz_nextprime :: Ptr MPZ -> Ptr MPZ -> IO ()
+-- > import Numeric.GMP.Raw.Safe (mpz_nextprime)
 -- >
 -- > nextPrime :: Integer -> Integer
 -- > nextPrime n =
@@ -60,20 +59,13 @@ import GHC.Types (IO(..))
 
 import Numeric.GMP.Types
 
-foreign import ccall unsafe "__gmpz_init"
-  mpz_init :: Ptr MPZ -> IO ()
-
-foreign import ccall unsafe "__gmpz_clear"
-  mpz_clear :: Ptr MPZ -> IO ()
-
-foreign import ccall unsafe "__gmpq_init"
-  mpq_init :: Ptr MPQ -> IO ()
-
-foreign import ccall unsafe "__gmpq_clear"
-  mpq_clear :: Ptr MPQ -> IO ()
-
-foreign import ccall unsafe "__gmpz_set"
-  mpz_set :: Ptr MPZ -> Ptr MPZ -> IO ()
+import Numeric.GMP.Raw.Unsafe
+  ( mpz_init
+  , mpz_clear
+  , mpq_init
+  , mpq_clear
+  , mpz_set
+  )
 
 foreign import ccall unsafe "mpz_set_HsInt" -- implemented in wrappers.c
   mpz_set_HsInt :: Ptr MPZ -> Int -> IO ()
