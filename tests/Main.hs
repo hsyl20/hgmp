@@ -7,13 +7,7 @@ import System.Exit (exitFailure)
 import Foreign
 import Numeric.GMP.Types
 import Numeric.GMP.Utils
-
-
-foreign import ccall safe "__gmpz_mul"
-  mpz_mul :: Ptr MPZ -> Ptr MPZ -> Ptr MPZ -> IO ()
-
-foreign import ccall safe "__gmpq_mul"
-  mpq_mul :: Ptr MPQ -> Ptr MPQ -> Ptr MPQ -> IO ()
+import Numeric.GMP.Raw.Safe (mpz_mul, mpq_mul)
 
 
 -- instance Arbitrary Integer has small range
