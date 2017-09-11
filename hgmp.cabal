@@ -1,5 +1,5 @@
 name:                hgmp
-version:             0.1.0.1
+version:             0.1.1
 synopsis:            Haskell interface to GMP
 description:         Types and instances, and marshalling between Integer and
                      Rational and the corresponding GMP types, along with raw
@@ -60,4 +60,4 @@ source-repository head
 source-repository this
   type:                git
   location:            https://code.mathr.co.uk/hgmp.git
-  tag:                 v0.1.0.1
+  tag:                 v0.1.1
