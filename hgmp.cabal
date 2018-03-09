@@ -28,7 +28,7 @@ library
                      , Numeric.GMP.Types
                      , Numeric.GMP.Raw.Safe
                      , Numeric.GMP.Raw.Unsafe
-  build-depends:       base >= 4.8 && < 4.11
+  build-depends:       base >= 4.8 && < 4.12
                      , integer-gmp >= 1.0 && < 1.1
                      , ghc-prim >= 0.4 && < 0.6
   build-tools:         hsc2hs
