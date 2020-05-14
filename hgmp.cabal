@@ -28,9 +28,15 @@ library
                      , Numeric.GMP.Types
                      , Numeric.GMP.Raw.Safe
                      , Numeric.GMP.Raw.Unsafe
-  build-depends:       base >= 4.8 && < 4.14
-                     , integer-gmp >= 1.0 && < 1.1
-                     , ghc-prim >= 0.4 && < 0.6
+
+  build-depends:       base >= 4.8 && < 4.17
+                     , ghc-prim >= 0.4 && < 0.7
+
+  if impl(ghc >= 8.11)
+     build-depends:    ghc-bignum >= 1.0 && < 1.1
+  else
+     build-depends:    integer-gmp >= 1.0 && < 1.1
+
   build-tools:         hsc2hs
   hs-source-dirs:      src
   c-sources:           cbits/wrappers.c

@@ -1,6 +1,8 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE UnboxedTuples #-}
+
 -- | GMP utilities.  A simple example with probable primes:
 --
 -- > import Numeric.GMP.Raw.Safe (mpz_nextprime)
@@ -38,6 +40,22 @@ import Control.Exception (bracket_)
 import Data.Ratio ((%), numerator, denominator)
 import Foreign (allocaBytes, alloca, with, sizeOf, peek)
 
+#if MIN_VERSION_base(4,14,0)
+
+#define GHC_BIGNUM 1
+import GHC.Num.Integer
+  ( Integer(..)
+  , integerFromBigNat
+  , integerFromBigNatNeg
+  )
+import GHC.Num.BigNat
+  ( bigNatSize#
+  )
+
+#else
+
+#define GHC_BIGNUM 0
+
 import GHC.Integer.GMP.Internals
   ( Integer(..)
   , BigNat(..)
@@ -46,6 +64,12 @@ import GHC.Integer.GMP.Internals
   , bigNatToInteger
   , bigNatToNegInteger
   )
+
+#define IS S#
+
+#endif
+
+
 import GHC.Prim
   ( ByteArray#
   , sizeofByteArray#
@@ -76,12 +100,24 @@ foreign import ccall unsafe "mpz_set_HsInt" -- implemented in wrappers.c
 --   to it to escape its scope.
 withInInteger' :: Integer -> (MPZ -> IO r) -> IO r
 withInInteger' i action = case i of
-  S# n# -> alloca $ \src -> bracket_ (mpz_init src) (mpz_clear src) $ do
+  IS n# -> alloca $ \src -> bracket_ (mpz_init src) (mpz_clear src) $ do
     -- a bit awkward, TODO figure out how to do this without foreign calls?
     mpz_set_HsInt src (I# n#)
     z <- peek src
     r <- action z
     return r
+#if GHC_BIGNUM
+  IP ba# -> withByteArray ba# $ \d _ -> action MPZ
+        { mpzAlloc = 0
+        , mpzSize = fromIntegral (I# (bigNatSize# ba#))
+        , mpzD = d
+        }
+  IN ba# -> withByteArray ba# $ \d _ -> action MPZ
+        { mpzAlloc = 0
+        , mpzSize = - fromIntegral (I# (bigNatSize# ba#))
+        , mpzD = d
+        }
+#else
   Jp# bn@(BN# ba#) -> withByteArray ba# $ \d _ -> action MPZ
         { mpzAlloc = 0
         , mpzSize = fromIntegral (I# (sizeofBigNat# bn))
@@ -92,6 +128,7 @@ withInInteger' i action = case i of
         , mpzSize = - fromIntegral (I# (sizeofBigNat# bn))
         , mpzD = d
         }
+#endif
 
 withByteArray :: ByteArray# -> (Ptr a -> Int -> IO r) -> IO r
 withByteArray ba# f = do
@@ -148,7 +185,7 @@ withOutInteger_ action = do
 -- | Store an 'Integer' into an @mpz_t@, which must have been initialized with
 --   @mpz_init@.
 pokeInteger :: Ptr MPZ -> Integer -> IO ()
-pokeInteger dst (S# n#) = mpz_set_HsInt dst (I# n#)
+pokeInteger dst (IS n#) = mpz_set_HsInt dst (I# n#)
 -- copies twice, once in withInteger, and again in @mpz_set@.
 -- could maybe rewrite to do one copy, using gmp's own alloc functions?
 pokeInteger dst j = withInInteger j $ mpz_set dst
@@ -161,10 +198,17 @@ peekInteger' MPZ{ mpzSize = size, mpzD = d } = do
 -- This copies once, from 'Ptr' 'MPLimb' to 'ByteArray#'
 -- 'byteArrayToBigNat#' hopefully won't need to copy it again
     asByteArray d (fromIntegral (abs size) * sizeOf (undefined :: MPLimb))
+#if GHC_BIGNUM
+      (\ba# -> return $ if size < 0
+         then integerFromBigNatNeg ba#
+         else integerFromBigNat    ba#
+      )
+#else
       (\ba# -> return $ case fromIntegral (abs size) of
         I# size# -> (if size < 0 then bigNatToNegInteger else bigNatToInteger)
             (byteArrayToBigNat# ba# size#)
       )
+#endif
 
 asByteArray :: Ptr a -> Int -> (ByteArray# -> IO r) -> IO r
 asByteArray (Ptr addr#) (I# bytes#) f = do
